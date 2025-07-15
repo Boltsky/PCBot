@@ -1,0 +1,40 @@
+# PCRst Bot Requirements
+# Core dependencies for PCRst Telegram bot with file management and security features
+
+# Telegram Bot Framework
+python-telegram-bot>=20.0
+
+# Image and Screen Capture
+opencv-python>=4.5.0
+mss>=6.1.0
+numpy>=1.21.0
+Pillow>=8.0.0
+pyautogui>=0.9.52
+
+# Async File Operations
+aiofiles>=23.0.0
+aiohttp>=3.8.0
+
+# Security and Cryptography
+cryptography>=41.0.0
+
+# Network and HTTP
+urllib3>=2.0.0
+requests>=2.31.0
+
+# System and OS Operations
+psutil>=5.8.0
+
+# Development and Testing
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.1.0
+
+# Logging and Monitoring
+colorlog>=6.7.0
+
+# Date and Time
+python-dateutil>=2.8.0
+
+# JSON and Data Processing
+jsonschema>=4.19.0
