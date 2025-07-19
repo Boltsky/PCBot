@@ -1,5 +1,5 @@
-# PCRst Bot Requirements
-# Core dependencies for PCRst Telegram bot with file management and security features
+# PCBot Requirements
+# Core dependencies for PCBot Telegram bot with file management and security features
 
 # Telegram Bot Framework
 python-telegram-bot>=20.0

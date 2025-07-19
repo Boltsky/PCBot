@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Security Manager Module for PCRst
+Security Manager Module for PCBot
 Implements comprehensive security features including:
 - User authentication and authorization
 - Path traversal and file type restrictions
@@ -32,7 +32,7 @@ security_logger = logging.getLogger('security')
 security_logger.setLevel(logging.INFO)
 
 # Create file handler for security logs
-security_log_file = os.path.join(tempfile.gettempdir(), 'pcrst_security.log')
+security_log_file = os.path.join(tempfile.gettempdir(), 'pcbot_security.log')
 security_handler = logging.FileHandler(security_log_file)
 security_handler.setLevel(logging.INFO)
 
@@ -287,7 +287,7 @@ class SecurityManager:
             os.makedirs(user_dir, exist_ok=True)
             
             # Test if we can write to this directory
-            test_path = os.path.join(user_dir, f'.pcrst_test_{user_id}')
+            test_path = os.path.join(user_dir, f'.pcbot_test_{user_id}')
             try:
                 with open(test_path, 'w') as f:
                     f.write('test')
@@ -300,7 +300,7 @@ class SecurityManager:
         
         # Fallback to current directory itself
         try:
-            test_path = os.path.join(current_dir, f'.pcrst_test_{user_id}')
+            test_path = os.path.join(current_dir, f'.pcbot_test_{user_id}')
             try:
                 with open(test_path, 'w') as f:
                     f.write('test')
@@ -470,7 +470,7 @@ class SecurityManager:
         return is_safe
     
     def __init__(self, db_path: str = None):
-        self.db_path = db_path or os.path.join(tempfile.gettempdir(), 'pcrst_security.db')
+        self.db_path = db_path or os.path.join(tempfile.gettempdir(), 'pcbot_security.db')
         self.users: Dict[str, UserProfile] = {}
         self.active_sessions: Dict[str, datetime] = {}
         self.cleanup_thread = None

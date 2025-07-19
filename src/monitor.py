@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-PCRst Bot Monitoring Script
+PCBot Monitoring Script
 Monitors logs, performance, and system health
 """
 
@@ -28,11 +28,11 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-class PCRstMonitor:
-    """PCRst Bot monitoring system"""
+class PCBotMonitor:
+    """PCBot monitoring system"""
     
     def __init__(self, db_path: str = None):
-        self.db_path = db_path or os.path.join(tempfile.gettempdir(), 'pcrst_security.db')
+        self.db_path = db_path or os.path.join(tempfile.gettempdir(), 'pcbot_security.db')
         self.running = False
         self.monitor_thread = None
         self.stats = {
@@ -48,7 +48,7 @@ class PCRstMonitor:
         
     def start_monitoring(self):
         """Start the monitoring service"""
-        logger.info("Starting PCRst Bot monitoring service...")
+        logger.info("Starting PCBot monitoring service...")
         self.running = True
         self.monitor_thread = threading.Thread(target=self._monitor_loop, daemon=True)
         self.monitor_thread.start()
@@ -297,7 +297,7 @@ class PCRstMonitor:
         try:
             if filename is None:
                 timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-                filename = f"pcrst_stats_{timestamp}.json"
+                filename = f"pcbot_stats_{timestamp}.json"
                 
             report = self.get_status_report()
             
@@ -314,10 +314,10 @@ class PCRstMonitor:
 
 def main():
     """Main monitoring function"""
-    monitor = PCRstMonitor()
+    monitor = PCBotMonitor()
     
     try:
-        print("🔍 PCRst Bot Monitor Starting...")
+        print("🔍 PCBot Monitor Starting...")
         print("=" * 50)
         
         # Start monitoring
@@ -326,7 +326,7 @@ def main():
         # Interactive commands
         while True:
             try:
-                print("\n📊 PCRst Bot Monitor Commands:")
+                print("\n📊 PCBot Monitor Commands:")
                 print("1. Show current stats")
                 print("2. Export stats to file")
                 print("3. Show recommendations")
@@ -378,7 +378,7 @@ def main():
         print(f"❌ Critical error: {e}")
     finally:
         monitor.stop_monitoring()
-        print("🔍 PCRst Bot Monitor Stopped")
+        print("🔍 PCBot Monitor Stopped")
 
 
 if __name__ == "__main__":

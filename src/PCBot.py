@@ -44,6 +44,9 @@ import weakref
 import aiofiles
 import aiohttp
 from security_manager import SecurityManager, secure_operation, security_manager, SecurityEvent
+from commands import hide_command, unhide_command, hidden_command
+from commands import delete_command, copy_command, move_command, rename_command
+from commands import file_attachment_handler
 
 # Import Windows API for disk info
 try:
@@ -277,7 +280,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user_id = str(update.effective_user.id)
     quota_info = security_manager.get_user_quota_info(user_id)
     
-    welcome_msg = f"🔐 **PCRst Security System Active**\n\n"
+    welcome_msg = f"🔐 **PCBot Security System Active**\n\n"
     welcome_msg += f"👤 User: {update.effective_user.first_name or update.effective_user.username}\n"
     welcome_msg += f"🆔 ID: {user_id}\n\n"
     
@@ -293,21 +296,22 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     welcome_msg += f"• Quota enforcement\n"
     welcome_msg += f"• Audit logging\n"
     welcome_msg += f"• Automatic cleanup\n\n"
-    welcome_msg += f"📋 Use /help to see available commands."
+    welcome_msg += f"📋 Use /help to see available commands.\n\n"
+    welcome_msg += f"🤖 **Welcome to the bot!** Please go to the bot and press `/start` to begin."
     
     await update.message.reply_text(welcome_msg, parse_mode='Markdown')
 
 @secure_operation('basic_access')
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    help_text = """
+    help_text = r"""
 📋 *Available Commands:*
 
 *🔧 Basic Commands:*
-/start \\- Initialize the bot and display a welcome message
-/help \\- Show this help message with all available commands
+/start \- Initialize the bot and display a welcome message
+/help \- Show this help message with all available commands
 
 *📁 File Management:*
-/upload \\<file\_path\\> \\- Upload a file to the bot
+/upload \<file\_path\> \- Upload a file to the bot
 /download \\<file\_url\\> \\\\- Download a file from a given URL
 /listfiles \\<directory\_path\\> \\\\- List all files in a directory
 /fileinfo \\<file\_path\\> \\\\- Provides detailed information about a file
@@ -364,6 +368,10 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 /navhelp \\\\- Detailed navigation commands and examples
 
 ⚠️ *Warning:* Some commands like /hardreset are destructive and cannot be undone\\\\. Use with caution\\\\!
+
+🎓 **Educational Purpose Only:** This bot is designed for educational purposes only. Please use responsibly and in accordance with applicable laws and regulations.
+
+👨‍💻 **Developer Support:** For support or questions, contact the developer: https://t.me/SurajCodes
     """
     await update.message.reply_text(help_text, parse_mode='Markdown')
 
@@ -1363,7 +1371,7 @@ async def snap_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
             return
         
         # Saving snapshot
-        user_dir = f"D:/PYTHON/PCRst/downloads/user_{user_id}"
+        user_dir = f"D:/PYTHON/PCBot/downloads/user_{user_id}"
         os.makedirs(user_dir, exist_ok=True)
         temp_file_path = os.path.join(user_dir, "snapshot.png")
         cv2.imwrite(temp_file_path, frame)
@@ -4526,7 +4534,7 @@ async def location_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     # Try to get address from GPS coordinates
                     try:
                         from geopy.geocoders import Nominatim
-                        geolocator = Nominatim(user_agent="PCRst_location_finder")
+                        geolocator = Nominatim(user_agent="PCBot_location_finder")
                         
                         # Reverse geocode to get address
                         location = geolocator.reverse((gps_location['latitude'], gps_location['longitude']))
@@ -4568,7 +4576,7 @@ async def location_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 # Try to get address information
                 try:
                     from geopy.geocoders import Nominatim
-                    geolocator = Nominatim(user_agent="PCRst_location_finder")
+                    geolocator = Nominatim(user_agent="PCBot_location_finder")
                     
                     # Reverse geocode to get address
                     location = geolocator.reverse((g.latlng[0], g.latlng[1]))
@@ -5453,7 +5461,6 @@ def main():
     app.add_handler(CommandHandler("navhelp", navigation_help_command))
     
     # File hiding commands
-    from hide_unhide_commands import hide_command, unhide_command, hidden_command
     app.add_handler(CommandHandler("hide", hide_command))
     app.add_handler(CommandHandler("unhide", unhide_command))
     app.add_handler(CommandHandler("hidden", hidden_command))
@@ -5463,7 +5470,6 @@ def main():
     app.add_handler(CommandHandler("runexe", runexe_command))
     
     # File operation commands
-    from file_operation_commands import delete_command, copy_command, move_command, rename_command
     app.add_handler(CommandHandler("delete", delete_command))
     app.add_handler(CommandHandler("copy", copy_command))
     app.add_handler(CommandHandler("move", move_command))
@@ -5478,7 +5484,6 @@ def main():
     app.add_handler(CommandHandler("stop", stop_command))
     
     # File attachment handler for non-command messages
-    from file_attachment_handler import file_attachment_handler
     app.add_handler(MessageHandler(
         filters.Document.ALL | filters.PHOTO | filters.VIDEO | filters.AUDIO | filters.VOICE | filters.VIDEO_NOTE | filters.Sticker.ALL,
         file_attachment_handler
