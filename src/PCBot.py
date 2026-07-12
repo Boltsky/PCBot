@@ -62,7 +62,15 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-TOKEN = '7344228475:AAGfRCF10-jR_b-8qtof8HnslhIODMUwXwE'
+CONFIG_PATH = Path("config.json")
+
+def load_bot_config():
+    with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+config = load_bot_config()
+TOKEN = config["bot_token"]
+AUTHORIZED_USERS = set(str(uid) for uid in config.get("authorized_users", []))
 
 @secure_operation('read')
 async def tree_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
