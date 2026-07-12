@@ -1,55 +1,57 @@
 @echo off
-REM Deployment script for PCBot (Windows)
+setlocal EnableExtensions EnableDelayedExpansion
+title PCBot Deployment
 
 echo.
-echo [1;34mPCBot Deployment Script[0m
+echo =====================================
+echo    PCBot Deployment Script
 echo =====================================
 echo.
 
-REM Check if Python is installed
+REM Move to the folder where this BAT file lives
+cd /d "%~dp0" || (
+    echo [ERROR] Failed to change directory to script folder.
+    pause
+    exit /b 1
+)
+
+REM Check Python
 python --version >nul 2>&1
-if %errorlevel% neq 0 (
-    echo [1;31mError: Python is not installed or not in PATH[0m
+if errorlevel 1 (
+    echo [ERROR] Python is not installed or not in PATH.
     pause
     exit /b 1
 )
 
-REM Update repository (if using git)
-echo [1;34mUpdating source repository...[0m
-git pull origin main 2>nul
-if %errorlevel% neq 0 (
-    echo [1;33mWarning: Git repository update failed or not a git repository[0m
-)
-
-REM Install/update dependencies
-echo.
-echo [1;34mInstalling/updating dependencies...[0m
-pip install -r requirements.txt
-if %errorlevel% neq 0 (
-    echo [1;31mError: Failed to install dependencies[0m
-    pause
-    exit /b 1
-)
-
-REM Run tests (skipping for now - test files in backup directory)
-echo.
-echo [1;33mSkipping tests - test files moved to backup directory[0m
-REM If you want to run tests, use: pytest backup\\
-echo [1;32mTest step skipped - proceeding with deployment[0m
-
-REM Create logs directory if it doesn't exist
+REM Create logs folder
 if not exist "logs" mkdir logs
 
-REM Launch application
-echo.
-echo [1;34mStarting PCBot...[0m
-echo Bot is starting up. Check logs\pcbot.log for details.
-echo Press Ctrl+C to stop the bot.
+REM If config.json is missing, run first-time setup
+if not exist "config.json" (
+    echo [INFO] No config.json found.
+    echo [INFO] First-time setup will prompt for Telegram bot credentials.
+    echo.
+    python run_pcbot.py
+    if errorlevel 1 (
+        echo.
+        echo [ERROR] First-time setup failed.
+        pause
+        exit /b 1
+    )
+    echo.
+    echo [INFO] Setup completed successfully.
+    pause
+    exit /b 0
+)
+
+REM Launch bot and keep output visible in a log
+echo [INFO] config.json found.
+echo [INFO] Starting PCBot...
+echo [INFO] Check logs\pcbot.log for details.
 echo.
 
-REM Start the bot and redirect output to log file
-python run_pcbot.py > logs\pcbot.log 2>&1
+python run_pcbot.py > "logs\pcbot.log" 2>&1
 
 echo.
-echo [1;33mBot has stopped.[0m
+echo [INFO] Bot has stopped.
 pause
