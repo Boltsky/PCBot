@@ -168,3 +168,4 @@ When contributing to PCBot:
 ## Support
 
 For issues or questions about PCBot, please refer to the testing report in `TESTING_REPORT.md` for detailed functionality validation and troubleshooting guidance.
+This whole project is for research and Education purposes ONLY. Creator of this Project is not Liable to any misuse by anyone.
