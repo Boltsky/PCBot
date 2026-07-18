@@ -23,80 +23,88 @@ PCBot/
 ├── config.json                # Bot configuration (auto-created on first run)
 ├── requirements.txt           # Python dependencies
 ├── hidden_pcbot.vbs           # Windows hidden launcher (primary)
-├── install_prerequisites.bat  # One-time Windows setup script
+├── install_prerequisites.bat  # Fresh Windows setup script (run this FIRST)
 ├── deploy.bat                 # Windows quick-deploy script
 ├── deploy.sh                  # Linux quick-deploy script
 ├── run_pcbot.py               # Bot launcher script
 └── README.md                  # This file
 ```
 
-## Installation
+---
 
-### 1. Clone the Repository
+## Windows Installation (Fresh Machine)
+
+> These steps are for a **brand new Windows PC** with nothing pre-installed (no Python, no Git, no package managers). Follow them in order.
+
+### Step 1 — Download and Run the Prerequisites Installer
+
+On a fresh Windows machine, you won't have Git to clone the repo yet. So the very first thing to do is:
+
+1. Download **[install_prerequisites.bat](https://github.com/Boltsky/PCBot/blob/master/install_prerequisites.bat)** directly from the GitHub page (click **Raw**, then save the file)
+2. Right-click the downloaded file and choose **"Run as administrator"
+3. Wait for it to complete — this may take several minutes depending on your internet speed
+
+The script will automatically install:
+- **Chocolatey** — Windows package manager
+- **Git** — required to clone the repository
+- **Python 3** — required to run the bot
+
+It checks for each tool before installing, so it is safe to re-run. At the end, it prints the installed versions to confirm everything is ready.
+
+> **Note:** You must run this as Administrator or the script will exit with an error. Right-click the file and select "Run as administrator".
+
+> **Note:** After the script finishes, **close and reopen any terminal/Command Prompt windows** to ensure the new PATH changes (Git, Python) take effect.
+
+---
+
+### Step 2 — Clone the Repository
+
+Once Git is installed, open a new Command Prompt and run:
 
 ```bash
 git clone https://github.com/Boltsky/PCBot.git
 cd PCBot
 ```
 
-### 2. Install Dependencies
+---
+
+### Step 3 — Install Python Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 3. Configure the Bot
+---
 
-On first run, PCBot will automatically prompt you to enter your Telegram bot token and authorized user IDs, then create `config.json` for you. Manual editing is optional:
-
-```json
-{
-  "bot_token": "your_telegram_bot_token_here",
-  "authorized_users": [123456789, 987654321]
-}
-```
-
-### 4. First Run
+### Step 4 — First Run & Bot Setup
 
 ```bash
 python run_pcbot.py
 ```
 
-Complete the interactive setup when prompted. After `config.json` is created, stop the bot and use the Windows VBS launcher for persistent deployment.
+On first run, PCBot will prompt you for:
+- Your **Telegram bot token** (get one from [@BotFather](https://t.me/BotFather))
+- Your **authorized Telegram user ID(s)**
+
+It will then create `config.json` automatically. Once setup is complete, stop the bot (`Ctrl+C`) and proceed to the deployment step.
+
+> Manual editing of `config.json` is optional. The file is auto-generated on first run.
 
 ---
 
-## Windows Deployment (Recommended)
+### Step 5 — Deploy Hidden with VBS Launcher
 
-PCBot ships with `hidden_pcbot.vbs` — a portable Windows launcher that starts the bot silently (no console window) from whatever folder it is stored in.
+PCBot includes `hidden_pcbot.vbs` — a portable Windows launcher that starts the bot silently (no console window) from whatever folder it lives in.
 
-### Prerequisites (one time per PC)
+**Double-click `hidden_pcbot.vbs`** to start PCBot with no visible window.
 
-Run as **Administrator**:
+Or run it from command line:
 
 ```bat
-install_prerequisites.bat
+wscript.exe hidden_pcbot.vbs
 ```
 
-This installs Chocolatey, Git, and Python 3 automatically.
-
-### Required Folder Layout
-
-Keep all these files in the same folder:
-
-```
-PCBot/
-├── hidden_pcbot.vbs     <- launcher
-├── run_pcbot.py
-├── requirements.txt
-├── config.json
-├── src/
-└── logs/
-```
-
-### The VBS Launcher
-
-`hidden_pcbot.vbs` uses a portable pattern that detects its own folder at runtime — no hardcoded paths:
+The launcher uses this portable pattern (no hardcoded paths):
 
 ```vbscript
 Set WshShell = CreateObject("WScript.Shell")
@@ -111,20 +119,10 @@ Set FSO = Nothing
 Set WshShell = Nothing
 ```
 
-- Runs `run_pcbot.py` from the folder where the `.vbs` is saved
 - Window mode `0` = hidden (no black console window)
-- `False` = non-blocking (does not wait for script to finish)
-- Works from any path — USB drive, Desktop, server share, etc.
-
-### Launch Hidden
-
-Double-click `hidden_pcbot.vbs` to start PCBot with no visible window.
-
-Alternatively via command line:
-
-```bat
-wscript.exe hidden_pcbot.vbs
-```
+- `False` = non-blocking
+- Works from any location — Desktop, USB drive, server share, etc.
+- `hidden_pcbot.vbs` and `run_pcbot.py` must stay in the same folder
 
 ---
 
@@ -133,32 +131,23 @@ wscript.exe hidden_pcbot.vbs
 ### Method A: Startup Folder (Simple)
 
 1. Press `Win + R`, type `shell:startup`, press **Enter**
-2. Create a **shortcut** to `hidden_pcbot.vbs` (right-click → Create shortcut)
+2. Right-click `hidden_pcbot.vbs` → **Create shortcut**
 3. Move the **shortcut** (not the original file) into the Startup folder
-4. PCBot will now start automatically on every Windows login
+4. PCBot will now launch automatically on every Windows login
 
-> **Note:** Place the shortcut in the Startup folder, not the original `.vbs` file itself.
+> Place only the shortcut in the Startup folder, not the `.vbs` file itself.
 
-### Method B: Task Scheduler (More Reliable / Elevated)
+### Method B: Task Scheduler (More Reliable)
 
-Use this method for higher reliability or if you need the bot to run with elevated privileges:
-
-1. Open **Task Scheduler** (search in Start menu)
-2. Click **Create Task** (not "Create Basic Task")
-3. **General tab:**
-   - Name: `PCBot`
-   - (Optional) Check **Run with highest privileges**
-4. **Triggers tab:**
-   - Click **New** → Begin the task: **At log on**
-5. **Actions tab:**
-   - Click **New**
+1. Open **Task Scheduler** → **Create Task**
+2. **General tab:** Name it `PCBot`; optionally check **Run with highest privileges**
+3. **Triggers tab:** New → **At log on**
+4. **Actions tab:** New →
    - Program/script: `wscript.exe`
    - Add arguments: `"C:\full\path\to\hidden_pcbot.vbs"`
-6. Click **OK** to save
+5. Click **OK** to save
 
-After every reboot or logon, Task Scheduler will silently launch `hidden_pcbot.vbs`, which starts PCBot.
-
-> **Important:** Use the full absolute path to the `.vbs` file in Task Scheduler arguments.
+> Always use the full absolute path to the `.vbs` file in the arguments field.
 
 ---
 
@@ -171,9 +160,9 @@ chmod +x deploy.sh
 ./deploy.sh
 ```
 
-The script performs:
-- `git pull origin main` — pulls latest code
-- `pip install -r requirements.txt` — updates dependencies
+The script:
+- Pulls the latest code (`git pull origin main`)
+- Installs/updates dependencies (`pip install -r requirements.txt`)
 - Runs tests via `python3 test_focused.py`
 - Starts `python3 run_pcbot.py`
 - Tails `/var/log/pcbot/pcbot.log` for live output
@@ -203,6 +192,8 @@ The script performs:
 
 ## Configuration
 
+`config.json` is created automatically on first run. To edit it manually:
+
 ```json
 {
   "bot_token": "your_telegram_bot_token_here",
@@ -210,7 +201,7 @@ The script performs:
 }
 ```
 
-- `bot_token`: Get this from [@BotFather](https://t.me/BotFather) on Telegram
+- `bot_token`: Get from [@BotFather](https://t.me/BotFather) on Telegram
 - `authorized_users`: List of Telegram user IDs allowed to control the bot
 
 ---
@@ -227,10 +218,13 @@ The script performs:
 
 ## Requirements
 
-- Python 3.8+
 - Windows 10/11 (for VBS launcher) or Linux
-- Telegram bot token (from @BotFather)
+- Python 3.8+
+- Git
+- Telegram bot token (from [@BotFather](https://t.me/BotFather))
 - Internet connection
+
+> On a fresh Windows machine, run `install_prerequisites.bat` as Administrator first — it handles Git and Python installation automatically.
 
 See `requirements.txt` for Python package dependencies.
 
