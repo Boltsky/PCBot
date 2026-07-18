@@ -8,164 +8,234 @@ PCBot is a secure Telegram bot designed for remote PC management with advanced f
 
 ```
 PCBot/
-│
+|
 ├── src/
-│   ├── PCBot.py             # Main bot entry point
-│   ├── commands.py          # Consolidated command handlers
-│   ├── security_manager.py  # Security and authorization
-│   ├── utilities.py         # Consolidated utility functions
-│   ├── monitor.py           # System monitoring functions
-│   └── secure_delete.py     # Secure file deletion
+|   ├── PCBot.py               # Main bot entry point
+|   ├── commands.py            # Consolidated command handlers
+|   ├── security_manager.py    # Security and authorization
+|   ├── utilities.py           # Consolidated utility functions
+|   ├── monitor.py             # System monitoring functions
+|   └── secure_delete.py       # Secure file deletion
 ├── docs/
-│   └── TESTING_REPORT.md    # Comprehensive testing report
+|   └── TESTING_REPORT.md      # Comprehensive testing report
 ├── backup/
-│   └── [archived files]     # Backup of original modular files
-├── config.json              # Bot configuration
-├── requirements.txt         # Python dependencies
-├── run_pcbot.py            # Bot launcher script
-└── README.md               # This file
+|   └── [archived files]       # Backup of original modular files
+├── config.json                # Bot configuration (auto-created on first run)
+├── requirements.txt           # Python dependencies
+├── hidden_pcbot.vbs           # Windows hidden launcher (primary)
+├── install_prerequisites.bat  # One-time Windows setup script
+├── deploy.bat                 # Windows quick-deploy script
+├── deploy.sh                  # Linux quick-deploy script
+├── run_pcbot.py               # Bot launcher script
+└── README.md                  # This file
 ```
 
 ## Installation
 
-1. **Clone the Repository**
-   ```bash
-   git clone https://github.com/Boltsky/PCBot.git
-   cd PCBot
-   ```
+### 1. Clone the Repository
 
-2. **Install Dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. **Configure the Bot**
-   - Update `config.json` with your Telegram bot token
-   - Add authorized user IDs to the configuration
-
-4. **Run PCBot**
-   
-   **Quick Deployment (Recommended)**
-   
-   For Linux/Unix systems:
-   ```bash
-   ./deploy.sh
-   ```
-   
-   For Windows systems:
-   ```batch
-   deploy.bat
-   ```
-   
-   **Manual Execution**
-   ```bash
-   python run_pcbot.py
-   ```
-   
-   Or directly:
-   ```bash
-   python src/PCBot.py
-   ```
-
-## Usage Examples
-
-### File Management Commands
-
-#### Hide Files
-```
-/hide document.pdf
-/hide "file with spaces.txt"
-/hide folder_name
+```bash
+git clone https://github.com/Boltsky/PCBot.git
+cd PCBot
 ```
 
-#### Unhide Files
-```
-/unhide document.pdf
-/unhide "file with spaces.txt"
-/unhide folder_name
-```
+### 2. Install Dependencies
 
-#### List Hidden Files
-```
-/hidden
+```bash
+pip install -r requirements.txt
 ```
 
-### System Commands
-```
-/screenshot    # Capture and send system screenshot
-/help         # Display all available commands
-```
+### 3. Configure the Bot
 
-## Security Features
-
-- **User Authorization**: Only configured users can access PCBot commands
-- **Path Validation**: Protection against path traversal attacks
-- **Audit Logging**: Comprehensive logging of all operations
-- **Secure File Operations**: Safe file hiding/unhiding with validation
-- **Input Sanitization**: Protection against malicious input
-
-## Configuration
-
-Update `config.json` with your settings:
+On first run, PCBot will automatically prompt you to enter your Telegram bot token and authorized user IDs, then create `config.json` for you. Manual editing is optional:
 
 ```json
 {
   "bot_token": "your_telegram_bot_token_here",
-  "authorized_users": [
-    123456789,
-    987654321
-  ]
+  "authorized_users": [123456789, 987654321]
 }
 ```
 
-## Testing
-
-Run the test suite to verify PCBot functionality:
+### 4. First Run
 
 ```bash
-# Run all tests
-pytest tests/
-
-# Run with coverage
-pytest tests/ --cov=src
-
-# Run specific test category
-pytest tests/test_file_operations.py -v
+python run_pcbot.py
 ```
 
-## Backup and Recovery
+Complete the interactive setup when prompted. After `config.json` is created, stop the bot and use the Windows VBS launcher for persistent deployment.
 
-### Creating a Backup
-PCBot automatically creates backups during critical operations. You can also manually backup:
+---
 
-1. Stop PCBot
-2. Create archive of the project directory
-3. Store in the `backups/` directory
+## Windows Deployment (Recommended)
 
-### Restoring from Backup
+PCBot ships with `hidden_pcbot.vbs` — a portable Windows launcher that starts the bot silently (no console window) from whatever folder it is stored in.
 
-1. **Locate the Backup File**
-   - Navigate to the `PCBot/backups/` directory
+### Prerequisites (one time per PC)
 
-2. **Extract the Backup**
-   - Unzip the backup file to the project root
-   - Ensure extraction doesn't overwrite uncommitted changes
+Run as **Administrator**:
 
-3. **Verification**
-   - Verify all files are restored correctly
-   - Run tests to ensure functionality: `pytest tests/`
-   - Start PCBot: `python run_pcbot.py`
+```bat
+install_prerequisites.bat
+```
 
-## Contributing
+This installs Chocolatey, Git, and Python 3 automatically.
 
-When contributing to PCBot:
+### Required Folder Layout
 
-1. Follow the existing code structure and patterns
-2. Add tests for new functionality
-3. Update documentation as needed
-4. Ensure security best practices are maintained
+Keep all these files in the same folder:
 
-## Support
+```
+PCBot/
+├── hidden_pcbot.vbs     <- launcher
+├── run_pcbot.py
+├── requirements.txt
+├── config.json
+├── src/
+└── logs/
+```
 
-For issues or questions about PCBot, please refer to the testing report in `TESTING_REPORT.md` for detailed functionality validation and troubleshooting guidance.
-This whole project is for research and Education purposes ONLY. Creator of this Project is not Liable to any misuse by anyone.
+### The VBS Launcher
+
+`hidden_pcbot.vbs` uses a portable pattern that detects its own folder at runtime — no hardcoded paths:
+
+```vbscript
+Set WshShell = CreateObject("WScript.Shell")
+Set FSO = CreateObject("Scripting.FileSystemObject")
+
+scriptDir = FSO.GetParentFolderName(WScript.ScriptFullName)
+WshShell.CurrentDirectory = scriptDir
+
+WshShell.Run "cmd /c ""py -3 run_pcbot.py""", 0, False
+
+Set FSO = Nothing
+Set WshShell = Nothing
+```
+
+- Runs `run_pcbot.py` from the folder where the `.vbs` is saved
+- Window mode `0` = hidden (no black console window)
+- `False` = non-blocking (does not wait for script to finish)
+- Works from any path — USB drive, Desktop, server share, etc.
+
+### Launch Hidden
+
+Double-click `hidden_pcbot.vbs` to start PCBot with no visible window.
+
+Alternatively via command line:
+
+```bat
+wscript.exe hidden_pcbot.vbs
+```
+
+---
+
+## Auto-Start After Reboot (Windows Persistence)
+
+### Method A: Startup Folder (Simple)
+
+1. Press `Win + R`, type `shell:startup`, press **Enter**
+2. Create a **shortcut** to `hidden_pcbot.vbs` (right-click → Create shortcut)
+3. Move the **shortcut** (not the original file) into the Startup folder
+4. PCBot will now start automatically on every Windows login
+
+> **Note:** Place the shortcut in the Startup folder, not the original `.vbs` file itself.
+
+### Method B: Task Scheduler (More Reliable / Elevated)
+
+Use this method for higher reliability or if you need the bot to run with elevated privileges:
+
+1. Open **Task Scheduler** (search in Start menu)
+2. Click **Create Task** (not "Create Basic Task")
+3. **General tab:**
+   - Name: `PCBot`
+   - (Optional) Check **Run with highest privileges**
+4. **Triggers tab:**
+   - Click **New** → Begin the task: **At log on**
+5. **Actions tab:**
+   - Click **New**
+   - Program/script: `wscript.exe`
+   - Add arguments: `"C:\full\path\to\hidden_pcbot.vbs"`
+6. Click **OK** to save
+
+After every reboot or logon, Task Scheduler will silently launch `hidden_pcbot.vbs`, which starts PCBot.
+
+> **Important:** Use the full absolute path to the `.vbs` file in Task Scheduler arguments.
+
+---
+
+## Linux Deployment
+
+For Linux servers, use the included `deploy.sh`:
+
+```bash
+chmod +x deploy.sh
+./deploy.sh
+```
+
+The script performs:
+- `git pull origin main` — pulls latest code
+- `pip install -r requirements.txt` — updates dependencies
+- Runs tests via `python3 test_focused.py`
+- Starts `python3 run_pcbot.py`
+- Tails `/var/log/pcbot/pcbot.log` for live output
+
+> Adjust the log path in `deploy.sh` to match your server environment.
+
+---
+
+## Bot Commands
+
+| Command | Description |
+|---------|-------------|
+| `/start` | Initialize bot and verify authorization |
+| `/help` | Display all available commands |
+| `/screenshot` | Capture current screen |
+| `/files [path]` | List files in directory |
+| `/download [file]` | Download a file from the PC |
+| `/upload` | Upload a file to the PC |
+| `/hide [file]` | Securely hide a file |
+| `/unhide [file]` | Restore a hidden file |
+| `/sysinfo` | Display system information |
+| `/processes` | List running processes |
+| `/kill [pid]` | Kill a process by PID |
+| `/cmd [command]` | Execute a shell command |
+
+---
+
+## Configuration
+
+```json
+{
+  "bot_token": "your_telegram_bot_token_here",
+  "authorized_users": [123456789, 987654321]
+}
+```
+
+- `bot_token`: Get this from [@BotFather](https://t.me/BotFather) on Telegram
+- `authorized_users`: List of Telegram user IDs allowed to control the bot
+
+---
+
+## Security Features
+
+- **Authorization**: Only whitelisted Telegram user IDs can interact with the bot
+- **Audit Logging**: All commands and actions are logged with timestamps
+- **Secure File Operations**: Files are hidden using system-level attributes
+- **Secure Delete**: Files can be permanently deleted without recovery
+- **No Open Ports**: Bot communicates via Telegram polling — no inbound firewall rules needed
+
+---
+
+## Requirements
+
+- Python 3.8+
+- Windows 10/11 (for VBS launcher) or Linux
+- Telegram bot token (from @BotFather)
+- Internet connection
+
+See `requirements.txt` for Python package dependencies.
+
+---
+
+## Disclaimer
+
+This project is intended for research and education purposes only. Use responsibly and only on systems you own or have explicit permission to manage.
